@@ -63,6 +63,10 @@ function replaceAssetUrls(input, callback) {
   var output = String(input);
   var matches = input.match(/asset\-url\(([^\)]+)\)/g);
 
+  if (!matches) {
+    return output;
+  }
+
   matches
     .forEach(function (match) {
       var replacement = urlReplacer.call(this, match);
