@@ -34,9 +34,10 @@ function findAssetFile(assetPath) {
   var filePaths = ASSET_ROOTS.map(function (assetRoot) {
     return ASSET_TYPES.map(function (assetType) {
       var filePath = path.resolve('.', assetRoot, assetType, assetPath);
+      var cleanPath = filePath.replace(/\#\w+/, '');
       try {
-        var fileStat = fs.statSync(filePath);
-        return fileStat.isFile() ? filePath : null;
+        var fileStat = fs.statSync(cleanPath);
+        return fileStat.isFile() ? cleanPath : null;
       } catch (err) {
         return null;
       }
@@ -61,17 +62,15 @@ function urlReplacer(url) {
 
 function replaceAssetUrls(input, callback) {
   var output = String(input);
-  var matches = input.match(/asset\-url\(([^\)]+)\)/g);
+  var matches = input.match(/asset\-url\(([^\)]+?)\)/g);
 
-  if (!matches) {
-    return output;
+  if (matches) {
+    matches
+      .forEach(function (match) {
+        var replacement = urlReplacer.call(this, match);
+        output = output.replace(match, replacement);
+      }.bind(this));
   }
-
-  matches
-    .forEach(function (match) {
-      var replacement = urlReplacer.call(this, match);
-      output = output.replace(match, replacement);
-    }.bind(this));
 
   callback(output);
 }
